@@ -1,15 +1,27 @@
 # https://www.codewars.com/kata/5296bc77afba8baa690002d7/train/python
-def sudoku(puzzle):
-    while constain_zeros(puzzle):
-        row, col = get_better_position_by_mean()
-        print("Better position", row, col)
-        a = get_nulls(row, col)
-        print("Value", a)
-        puzzle[row][col] = a
+# https://www.youtube.com/watch?v=1i3kVj0aB5U
+def test_branch(puzzle, contador = 0, trys = 1):
+    contador += 1
+    print('Contador: ',contador)
+    if not constain_zeros(puzzle):
+        return puzzle
+    row, col = get_better_position_by_mean(trys)
+    print("Better position", row, col)
+    values = get_better_values(row, col)
+    if len(values) == 0:
+        return puzzle
+    for value in values:
+        print("Value:", value, values)
+        puzzle[row][col] = value
         for i in puzzle:
             print(i)
         print()
-    return puzzle
+        if not constain_zeros(puzzle):
+            return puzzle
+        puzzle = test_branch(puzzle, contador)
+        
+    if constain_zeros(puzzle):
+        test_branch(puzzle, contador, trys=trys+1)
 
 def get_row(row):
     return puzzle[row]
@@ -25,25 +37,13 @@ def get_area(id):
     for i in a:
         b += i
     return b
-    
-# def get_better_list():
-#     better_list = []
-#     for i in range(9):
-#         current_better = max([
-#             list(filter(lambda x: x != 0, get_row(i))),
-#             list(filter(lambda x: x != 0, get_col(i))),
-#             list(filter(lambda x: x != 0, get_area(i)))
-#         ], key=len)
-#         better_list = current_better if len(current_better) > len(better_list) else better_list
-#         print(better_list)
-#     print('\n\n', better_list)
 
-def get_better_position_by_mean():
+def get_better_position_by_mean(trys = 1):
     mean_puzzle = []
-    better_mean = 0
+    better_mean = [0]
     better_position = []
     for row in range(9):
-        mean_row = []
+        mean_row = [0]
         for col in range(9):
             if puzzle[row][col] == 0:
                 mean = 27 - (
@@ -52,13 +52,13 @@ def get_better_position_by_mean():
                     get_col(col).count(0)
                 )
                 mean_row.append(mean)
-                if mean > better_mean:
-                    better_mean = mean
-                    better_position = [row, col]
+                if mean > better_mean[-1]:
+                    better_mean.append(mean)
+                    better_position.append([row, col])
             else:
                 mean_row.append(0)
         mean_puzzle.append(mean_row) # talvez posso tirar o processamento do append
-    return better_position
+    return better_position[-trys]
             
 def set_id_area(i_row, i_col):
     for key in areas:
@@ -67,19 +67,24 @@ def set_id_area(i_row, i_col):
         if i_row in start and i_col in end:
             return key
 
-def get_nulls(row, col):
+def get_better_values(row, col):
     completed = list(range(10)) 
     a = list(set(get_row(row) + get_col(col) + get_area(set_id_area(row, col))))
     result = [item for item in completed if item not in a]
-    result = result[0] if len(result) == 1 else result
     return result
 
 def constain_zeros(matrix):
-    for y in matrix:
-        for x in y:
-            if x == 0:
-                return True
-    return False 
+    try:
+        for y in matrix:
+            for x in y:
+                if x == 0:
+                    return True
+        return False
+    except:
+        return True
+
+def count_voids(matrix):
+    return sum(elemento == 0 for linha in matrix for elemento in linha)
 
 
 areas = {
@@ -106,4 +111,6 @@ puzzle = [
     [0,0,0,0,8,0,0,7,9]
 ]
 
-sudoku(puzzle)
+resolved = test_branch(puzzle)
+for i in resolved:
+    print(i)
