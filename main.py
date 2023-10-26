@@ -1,36 +1,38 @@
 # https://www.codewars.com/kata/5296bc77afba8baa690002d7/train/python
 # https://www.youtube.com/watch?v=1i3kVj0aB5U
-def test_branch(puzzle, contador = 0, trys = 1):
-    contador += 1
-    print('Contador: ',contador)
-    if not constain_zeros(puzzle):
-        return puzzle
-    row, col = get_better_position_by_mean(trys)
-    print("Better position", row, col)
-    values = get_better_values(row, col)
-    if len(values) == 0:
-        return puzzle
-    for value in values:
-        print("Value:", value, values)
-        puzzle[row][col] = value
-        for i in puzzle:
-            print(i)
-        print()
+
+import copy
+
+def deep_search(grafo):
+    while len(grafo) > 0:
+        puzzle =  copy.deepcopy(grafo[-1])
+
         if not constain_zeros(puzzle):
             return puzzle
-        puzzle = test_branch(puzzle, contador)
         
-    if constain_zeros(puzzle):
-        test_branch(puzzle, contador, trys=trys+1)
+        row, col = get_better_position_by_mean(puzzle)
+        # print("Better position", row, col)
+        values = get_better_values(row, col, puzzle)
 
-def get_row(row):
+        if len(values) == 0:
+            grafo.pop()
+            continue
+            
+        grafo.pop()
+        for value in values:
+            # print("Value:", value, values)
+            puzzle[row][col] = value
+            # show_sudoku(puzzle)
+            grafo.append(copy.deepcopy(puzzle))
+
+def get_row(row, puzzle):
     return puzzle[row]
 
-def get_col(col):
+def get_col(col, puzzle):
     a = list(map(lambda x: x[col], puzzle))
     return a
 
-def get_area(id):
+def get_area(id, puzzle):
     id = str(id)
     b = []
     a = map(lambda x: x[int(areas[id][2]) : int(areas[id][3])], puzzle[int(areas[id][0]) : int(areas[id][1])])
@@ -38,7 +40,7 @@ def get_area(id):
         b += i
     return b
 
-def get_better_position_by_mean(trys = 1):
+def get_better_position_by_mean(puzzle):
     mean_puzzle = []
     better_mean = [0]
     better_position = []
@@ -47,18 +49,18 @@ def get_better_position_by_mean(trys = 1):
         for col in range(9):
             if puzzle[row][col] == 0:
                 mean = 27 - (
-                    get_area(set_id_area(row, col)).count(0) + 
-                    get_row(row).count(0) + 
-                    get_col(col).count(0)
+                    get_area(set_id_area(row, col), puzzle).count(0) + 
+                    get_row(row, puzzle).count(0) + 
+                    get_col(col, puzzle).count(0)
                 )
                 mean_row.append(mean)
                 if mean > better_mean[-1]:
                     better_mean.append(mean)
-                    better_position.append([row, col])
+                    better_position = [row, col]
             else:
                 mean_row.append(0)
         mean_puzzle.append(mean_row) # talvez posso tirar o processamento do append
-    return better_position[-trys]
+    return better_position
             
 def set_id_area(i_row, i_col):
     for key in areas:
@@ -67,9 +69,9 @@ def set_id_area(i_row, i_col):
         if i_row in start and i_col in end:
             return key
 
-def get_better_values(row, col):
+def get_better_values(row, col, puzzle):
     completed = list(range(10)) 
-    a = list(set(get_row(row) + get_col(col) + get_area(set_id_area(row, col))))
+    a = list(set(get_row(row, puzzle) + get_col(col, puzzle) + get_area(set_id_area(row, col), puzzle)))
     result = [item for item in completed if item not in a]
     return result
 
@@ -86,6 +88,9 @@ def constain_zeros(matrix):
 def count_voids(matrix):
     return sum(elemento == 0 for linha in matrix for elemento in linha)
 
+def show_sudoku(puzzle):
+    for line in puzzle:
+        print(line)
 
 areas = {
     '0': '0303',
@@ -99,7 +104,7 @@ areas = {
     '8': '6969'
 }
 
-puzzle = [
+main_puzzle = [
     [5,3,0,0,7,0,0,0,0],
     [6,0,0,1,9,5,0,0,0],
     [0,9,8,0,0,0,0,6,0],
@@ -111,6 +116,9 @@ puzzle = [
     [0,0,0,0,8,0,0,7,9]
 ]
 
-resolved = test_branch(puzzle)
+grafo = [main_puzzle]
+
+resolved = deep_search(grafo)
+
 for i in resolved:
     print(i)
