@@ -1,4 +1,4 @@
-# Sum of Intervals[https://www.codewars.com/kata/52b7ed099cdc285c300001cd]
+# [Sum of Intervals](https://www.codewars.com/kata/52b7ed099cdc285c300001cd)
 
 Write a function called  `sumIntervals`/`sum_intervals`  that accepts an array of intervals, and returns the sum of all the interval lengths. Overlapping intervals should only be counted once.
 
